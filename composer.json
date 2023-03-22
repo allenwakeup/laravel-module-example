@@ -41,7 +41,7 @@
     },
     "extra": {
         "push": {
-            "url": "http://mvn.dev.huangyebl.com/repository/composer-hosted",
+            "url": "http://xxxx/repository/composer-hosted",
             "type": "nexus",
             "ignore-by-git-attributes": true,
             "ignore": [
@@ -68,7 +68,7 @@
     "repositories": {
         "packagist": {
             "type": "composer",
-            "url": "http://mvn.dev.huangyebl.com/repository/composer-public"
+            "url": "http://xxxx/repository/composer-public"
         }
     }
 }
