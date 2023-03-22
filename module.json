@@ -1,0 +1,21 @@
+{
+    "name": "ModuleExample",
+    "alias": "moduleexample",
+    "description": "",
+    "keywords": [],
+    "priority": 100,
+    "order": 100,
+    "providers": [
+        "Goodcatch\\Modules\\ModuleExample\\Providers\\EventServiceProvider",
+        "Goodcatch\\Modules\\ModuleExample\\Providers\\ModuleExampleServiceProvider"
+    ],
+    "aliases": {
+
+    },
+    "files": [
+        "src/helpers.php"
+    ],
+    "requires": [],
+    "version": "0.1.0",
+    "type": 0
+}
