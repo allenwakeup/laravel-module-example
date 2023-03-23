@@ -18,6 +18,7 @@ import 'ant-design-vue/dist/antd.css';
 import {post,get,put,deletes,postfile,toJson,isEmpty,apiHandle} from '@this/plugins/http.js' // 请求方式中间件
 import {api} from '@this/plugins/api' // 后端API
 import {returnInfo,formatFloat,hasRoute, toDateString, toSubDateString} from '@/plugins/function' // 辅助方法
+import { moduleUrl } from '@this/plugins/function' // 辅助方法
 import VueLazyload from 'vue-lazyload' // 懒加载图片
 import 'babel-polyfill' // 兼容IE
 import { broadcast } from "@/plugins/ws";
@@ -43,6 +44,7 @@ Vue.prototype.$toDateString=toDateString; // 格式化日期
 Vue.prototype.$toSubDateString=toSubDateString; // 格式化日期取今天之前的日期
 Vue.prototype.$broadcast=broadcast;
 Vue.prototype.$lodash=lodash;
+Vue.prototype.$moduleUrl=moduleUrl;
 
 Vue.config.productionTip = false;
 

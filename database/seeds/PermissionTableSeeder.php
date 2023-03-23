@@ -9,9 +9,22 @@ class PermissionTableSeeder extends Seeder
 {
     use PermissionSeedsTrait;
 
+    // 模块菜单名称
     const MODULE_NAME = '模块示例';
+    /*
+     * 模块路由/权限，名称前缀
+     * 如 moduleexample::admin.examples
+     */
     const MODULE_ALIAS = 'moduleexample';
 
+    /*
+     * 参考路由配置
+     *
+     * Route::group(
+     * [
+     *      'as' => 'moduleexample::',
+     * ],
+     */
     const MODULE_API_PREFIX = 'moduleexample';
 
     public function getSeedsMenus (){

@@ -25,14 +25,14 @@
                         @handleExport="handleTableExport"/>
 
                     <div class="admin_table_handle_btn">
-                        <a-button @click="$router.push('/Admin/goodcatch/m/moduleexample/examples/form')" type="primary" size="small" icon="plus">添加</a-button>
+                        <a-button @click="$router.push($moduleUrl('examples/form'))" type="primary" size="small" icon="plus">添加</a-button>
                         <a-button v-if="!$isEmpty(table.actions.remove)" class="admin_delete_btn" size="small" type="danger" icon="delete" @click="handleRemoveTableRows">批量删除</a-button>
                     </div>
                 </template>
 
 
                 <span slot="action" slot-scope="rows">
-                    <a-button icon="edit" size="small" @click="$router.push('/Admin/goodcatch/m/moduleexample/examples/form/'+rows.id)">编辑</a-button>
+                    <a-button icon="edit" size="small" @click="$router.push($moduleUrl('examples/form/'+rows.id))">编辑</a-button>
                 </span>
             </a-table>
             <div class="admin_pagination" v-if="table.total > 0">

@@ -3,7 +3,7 @@
  * @author  Allen <ali@goodcatch.cn>
  */
 
-namespace Goodcatch\Modules\Core\Model;
+namespace Goodcatch\Modules\ModuleExample\Model;
 
 use Goodcatch\Modules\Laravel\Model\Model as BaseModel;
 
@@ -17,7 +17,7 @@ abstract class Model extends BaseModel
      * @return string prefix of table name
      */
     protected function getModuleTablePrefix () {
-        return 'core_';
+        return 'moduleexample_';
     }
 
 }

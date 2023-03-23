@@ -19,7 +19,7 @@ class SpaController extends Controller
 
         $view_content = array_merge($view_content, [
             'menu_type' => config('moduleexample.menu.type'),
-            'app_name' => '模块示例'
+            'app_name' => dynamic_config('app_name_moduleexample', _trans('experiment::base.app_name', '实验检测'))
         ]);
 
         return view('moduleexample::index', $view_content);

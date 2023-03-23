@@ -7,7 +7,7 @@
         <div class="unline underm"></div>
         <div class="admin_form">
             <a-form-model ref="form" :model="form" :rules="rules" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-                <a-form-model-item label="用户名" prop="username">
+                <a-form-model-item label="名称" prop="name">
                     <a-input v-model="form.name"></a-input>
                 </a-form-model-item>
                 <a-form-model-item :wrapper-col="{ span: 12, offset: 5 }">

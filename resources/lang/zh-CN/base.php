@@ -4,6 +4,7 @@
 
 return [
 
+    'app_name' => '模块示例',
 
 
 ];
