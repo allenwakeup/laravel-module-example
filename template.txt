@@ -1,0 +1,756 @@
+/**
+ * 替换变量说明
+ *
+ * $model               模型名称                user
+ * $model_plural        模型名称复数              users
+ * $model_uc_first      模型名称首字母大写       User
+ * $model_chinese_name  模型中文名               用户
+ * $model_snake_plural  模型名称蛇型复数              user_types
+ */
+
+
+!startroute={{-$model_snake_plural-}}.php
+<?php
+
+Route::apiResources([
+            '{{-$model_snake_plural-}}' => '{{-$model_uc_first-}}Controller']);
+Route::post('/{{-$model_snake_plural-}}/import','{{-$model_uc_first-}}Controller@import')->name('{{-$model_snake_plural-}}.import');
+
+!endroute
+
+!startindexview=js/views/Admin/{{-$model_snake_plural-}}/index.vue
+<template>
+    <div>
+        <div class="admin_table_page_title">{{-$model_chinese_name-}}列表</div>
+        <div class="unline underm"></div>
+
+        <div class="admin_table_list">
+            <a-table
+                :size="sysSize"
+                :components="resizeableTitleComponents"
+                :columns="getCachedTableColumns(table.columns)"
+                :data-source="table.data"
+                :scroll="{ y: sysWindowHeight - 280 }"
+                :loading="table.loading"
+                :pagination="false"
+                :row-selection="{ columnWidth: 25, selectedRowKeys: table.selectedRowKeys, onChange: handleTableRowKeysChange }"
+                :row-key="table.rowId">
+
+                <template slot="title" slot-scope="currentPageData">
+
+                    <search
+                        :search-config="search.fields"
+                        :auto-params="search.params"
+                        @searchParams="handleTableSearchParams"
+                        :export-config="exporting"
+                        @handleExport="handleTableExport"/>
+
+                    <div class="admin_table_handle_btn">
+                        <a-button @click="$router.push('/Admin/{{-$model_snake_plural-}}/form')" type="primary" :size="sysSize" icon="plus">添加</a-button>
+                        <a-button @click="openImportDialog" icon="import" :size="sysSize" :loading="import_loading">批量导入</a-button>
+                        <a-button v-if="!$isEmpty(table.actions.remove)" class="admin_delete_btn" :size="sysSize" type="danger" icon="delete" @click="handleRemoveTableRows">批量删除</a-button>
+                        <a-import
+                                :open="isOpenImportDialog"
+                                @close="closeImportDialog"
+                                @ok="handleImport"
+                                :action="$api.admin{{-$model_plural-}} + '/import'"
+                                title="{{-$model_chinese_name-}}数据导入"
+                                :columns="import_columns"
+                                top="5%"
+                                width="60%"
+                                height="560px"></a-import>
+                    </div>
+                </template>
+
+
+                <span slot="name" slot-scope="rows">
+                    {{ rows.name }}
+                </span>
+
+                <span slot="action" slot-scope="rows">
+                    <a-button icon="edit" :size="sysSize" @click="$router.push('/Admin/{{-$model_snake_plural-}}/form/'+rows.id)">编辑</a-button>
+                </span>
+            </a-table>
+            <div class="admin_pagination" v-if="table.total > 0">
+                <a-pagination v-model="table.params.page" :size="sysSize" :page-size-options="table.pageSizeOptions" :total="table.total" @change="handleTablePageChange" show-less-items show-size-changer show-quick-jumper :page-size="table.params.per_page" @showSizeChange="handleTablePageSizeChange"/>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { AImport } from '@core/components/admin/aimport'
+import Search from '@/components/admin/search'
+import { MixinList, MixinStore } from '@/plugins/mixins/admin'
+
+export default {
+    mixins: [ MixinList, MixinStore ],
+    components: { AImport, Search },
+    props: {},
+    data() {
+        return {
+            table: {
+                actions: {
+                    list: this.$api.admin{{-$model_plural_uc_first-}},
+                    remove: this.$api.admin{{-$model_plural_uc_first-}}
+                },
+                columns: [
+                    {title: '名称', scopedSlots: { customRender: 'name' }, width: 90, key: 'name', ellipsis: true},
+                    {title: '操作', scopedSlots: {customRender: 'action'}, width: 100, key: 'action'},
+                ],
+            },
+            search: {
+                fields: [
+                    {
+                        label: '名称',
+                        name: 'name',
+                        type: 'text'
+                    }
+                ]
+            },
+            exporting:{ // 数据导出
+                url: this.$api.admin{{-$model_plural_uc_first-}},
+                columns: [
+                    {
+                        label: '名称',
+                        name: 'name',
+                        dataFormat: (val, row) => val
+                    }
+                ],
+                transform(data) {
+
+                    return data.map(d => d);
+                }
+            },
+            loading_status: {},
+            isOpenImportDialog: false,
+            import_loading: false,
+            import_columns: [
+                {
+                    title: '名称',
+                    dataIndex: 'name',
+                    sorter: true,
+                    desc: '请填写{{-$model_chinese_name-}}名称'
+                }
+            ],
+        }
+
+    },
+    watch: {},
+    computed: {},
+    methods: {
+        openImportDialog(){
+            this.isOpenImportDialog = true;
+        },
+        closeImportDialog(){
+            this.isOpenImportDialog = false;
+            this.loadTableData();
+        },
+        handleImport(res){
+            if(res){
+
+                // this.loadTableData();
+            }
+        },
+        onload(){
+
+            // 加载混入中的表格数据
+            this.loadTableData();
+        }
+    },
+    created() {
+        this.onload();
+    },
+    mounted() {}
+};
+</script>
+<style lang="scss" scoped>
+
+</style>
+
+!endindexview
+
+!startformview=js/views/Admin/{{-$model_snake_plural-}}/form.vue
+<template>
+    <div>
+        <div class="admin_table_page_title">
+            <a-button type="link" @click="$router.back()" class="float_right" icon="arrow-left">返回</a-button>
+            {{-$model_chinese_name-}}编辑
+        </div>
+        <div class="unline underm"></div>
+        <div class="admin_form">
+            <a-form-model ref="form" :model="form" :rules="rules" :label-col="{ span: 6 }"  :wrapper-col="{ span: 16 }" dusk="admin-form">
+                <a-form-model-item label="名称" prop="name">
+                    <a-input v-model="form.name" dusk="admin-name"></a-input>
+                </a-form-model-item>
+                <a-form-model-item :wrapper-col="{ span: 12, offset: 5 }">
+                    <a-button type="primary" @click="handleSubmit" dusk="admin-submit">提交</a-button>
+                </a-form-model-item>
+            </a-form-model>
+
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    components: {},
+    props: {},
+    data() {
+      return {
+          form:{
+              name: ''
+          },
+          rules: {
+              name: [
+                  {required: true, message: '请输入名称', trigger: 'blur'},
+                  {min: 1, max: 100, message: '至少1~100个字', trigger: 'blur'},
+              ]
+          },
+          id:0,
+      };
+    },
+    watch: {},
+    computed: {},
+    methods: {
+        handleSubmit(){
+
+            this.$refs.form.validate(valid => {
+
+                const params = Object.assign({}, this.form);
+
+
+                if(valid){
+                    let api = this.$apiHandle(this.$api.admin{{-$model_plural_uc_first-}},this.id);
+                    if(api.status){
+                        this.$put(api.url,params).then(res=>{
+                            if(res.code === 200){
+                                this.$message.success(res.msg);
+                                this.sendMessageFormUpdated();
+                                this.$router.back();
+                                return this.$tabs.close();
+                            }else{
+                                return this.$message.error(res.msg)
+                            }
+                        })
+                    }else{
+                        this.$post(api.url,params).then(res=>{
+                            if(res.code === 200 || res.code === 201){
+                                this.$message.success(res.msg);
+                                this.sendMessageFormUpdated();
+                                this.$router.back();
+                                return this.$tabs.close();
+                            }else{
+                                return this.$message.error(res.msg)
+                            }
+                        })
+                    }
+                } else {
+                    this.$message.error('请按要求填写表单！');
+                    return false;
+                }
+            });
+
+        },
+        getForm(){
+            this.$get(this.$api.admin{{-$model_plural_uc_first-}}+'/'+this.id + '?type' + this.form.type).then(res=>{
+                if(res.code === 200 && !!res.data) {
+                    this.form = res.data;
+                }
+            })
+        },
+
+        // 获取列表
+        onload(){
+
+
+            // 判断你是否是编辑
+            if(!this.$isEmpty(this.$route.params.id)){
+                this.id = this.$route.params.id;
+                this.getForm();
+            }
+        },
+
+
+    },
+    created() {
+        this.onload();
+    },
+    mounted() {}
+};
+</script>
+<style lang="scss" scoped>
+
+</style>
+
+!endformview
+
+!startrepository=Repositories/Admin/{{-$model_uc_first-}}Repository.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Repositories\Admin;
+
+
+use Goodcatch\Modules\{{-$module_name-}}\Models\Admin\{{-$model_uc_first-}};
+use Goodcatch\Modules\Core\Repositories\Admin\BaseRepository;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+
+class {{-$model_uc_first-}}Repository extends BaseRepository
+{
+
+    public static function list($perPage, $condition = [], $keyword = null)
+    {
+        return {{-$model_uc_first-}}::query()
+            ->where(function ($query) use ($condition) {
+                self::buildQuery($query, $condition);
+                if (!empty ($keyword)) {
+                    self::buildSelect($query, $condition, $keyword);
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public static function add($data)
+    {
+        $data['code'] = $data['code'] ?? $data['name'];
+        $data['description'] = $data['description'] ?? $data['name'];
+        return {{-$model_uc_first-}}::query()->create($data);
+    }
+
+    public static function update($id, $data)
+    {
+        return {{-$model_uc_first-}}::find($id)->update($data);
+    }
+
+    public static function find($id)
+    {
+        return {{-$model_uc_first-}}::query()->find($id);
+    }
+
+    public static function delete($id)
+    {
+        return {{-$model_uc_first-}}::destroy($id);
+    }
+
+    public static function select ($keyword = null)
+    {
+        return {{-$model_uc_first-}}::query()
+            ->select(['id', 'path_text as name'])
+            ->where(function ($query) use ($keyword) {
+               if (! empty ($keyword))
+                {
+                    $query->where('path_text', 'like', '%' . $keyword . '%');
+                }
+            })
+            ->orderBy('level', 'desc')
+            ->get()
+            ->map(function ({{-$model_uc_first-}} $item) {
+                $map = $item->toArray();
+                $map['value'] = $item->id;
+                $map['text'] = $item->name;
+                $map['label'] = $item->name;
+                return $map;
+            });
+    }
+
+    public static function selectTree()
+    {
+        return {{-$model_uc_first-}}::select('id', 'name', 'order')
+            ->get()
+            ->map(function ({{-$model_uc_first-}} $model) {
+                $data = $model->toArray();
+                return $data;
+            })->sortBy('order');
+
+    }
+
+    /**
+     *
+     * 批量写入数据，不触发路径更新
+     *
+     * @param array $data_list
+     * @param int $type
+     * @return int the count of records
+     */
+    public static function import(array $data_list){
+        $exists = {{-$model_uc_first-}}::query()->withTrashed()->get()->reduce(function ($arr, $item) {
+            $arr [$item->name] = $item->id;
+            return $arr;
+        }, []);
+        $added = 0;
+        \collect($data_list)->each(function ($data) use (&$exists, &$added) {
+            $name = trim(Arr::get($data, 'name'));
+            $code = trim(Arr::get($data, 'code',$name));
+            $description = trim(Arr::get($data, 'description',$name));
+
+            if(!empty($name)){
+                if(Arr::has($exists,$name)){
+
+                }
+               else {
+                    try {
+                        $id = DB::table('{{-$model_snake_plural-}}')->insertGetId([
+                            'name' => $name,
+                            'code' => $code,
+                            'description' => $description,
+                            'status' => 1,
+                            'order'=>0,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    } catch (QueryException $e) {
+
+                    }
+                    if (isset($id)) {
+                        $added++;
+                        Arr::set($exists, $name, $id);
+                    }
+                }
+            }
+        });
+
+        return $added;
+    }
+}
+
+!endrepository
+
+
+!startrequest=Http/Requests/Admin/{{-$model_uc_first-}}Request.php
+<?php
+namespace Goodcatch\Modules\{{-$module_name-}}\Http\Requests\Admin;
+
+
+use Goodcatch\Modules\Core\Http\Requests\BaseRequest as FormRequest;
+use Goodcatch\Modules\Core\Models\Admin\Department;
+use Illuminate\Validation\Rule;
+
+class {{-$model_uc_first-}}Request extends FormRequest
+{
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules ()
+    {
+        $rules = [
+            'description' => 'max:190',
+            'name' => ['required', 'max:50', Rule::unique('{{-$model_snake_plural-}}','name')->ignore($this->route()->id)],
+            'order' => 'integer',
+            'code' => ['max:50',  Rule::unique('{{-$model_snake_plural-}}','code')->ignore($this->route()->id)],
+            'status' => [
+                'required',
+                Rule::in ([0,1])
+            ]
+        ];
+        switch ($this->method()) {
+            case 'GET':
+                $rules = [
+                    'name' => '',
+                    'code' => '',
+                    'description' => '',
+                ];
+                break;
+        }
+        return $rules;
+
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages ()
+    {
+        return [
+            'name.required' => '名称不能为空',
+            'name.max' => '名称长度不能大于50',
+
+        ];
+    }
+}
+!endrequest
+
+
+!startcontroller=Http/Controllers/Admin/{{-$model_uc_first-}}Controller.php
+<?php
+/**
+ * @author  Allen <ali@goodcatch.cn>
+ */
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Http\Controllers\Admin;
+
+
+use App\Http\Controllers\Controller;
+use Goodcatch\Modules\{{-$module_name-}}\Http\Requests\Admin\{{-$model_uc_first-}}Request;
+use Goodcatch\Modules\{{-$module_name-}}\Http\Resources\Admin\{{-$model_uc_first-}}Collection;
+use Goodcatch\Modules\{{-$module_name-}}\Models\Admin\{{-$model_uc_first-}};
+use Goodcatch\Modules\{{-$module_name-}}\Repositories\Admin\{{-$model_uc_first-}}Repository;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+class {{-$model_uc_first-}}Controller extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  {{-$model_uc_first-}}Request  $request
+     * @param  array  $conditions
+     * @return \Illuminate\Http\Response
+     */
+    public function index({{-$model_uc_first-}}Request $request, array $conditions = [])
+    {
+        $data_type = $request->get ('data_type');
+
+        if ($data_type === 'tree')
+        {
+            if (!empty ($request->keyword) && is_numeric ($request->keyword))
+            {
+                $data = {{-$model-}}Repository::tree2 (intval ($request->keyword));
+            } else {
+                $data = {{-$model-}}Repository::tree2 (0);
+            }
+        } else if ($data_type === 'select') {
+            $data = {{-$model-}}Repository::select ($request->keyword);
+        } else if ($data_type === 'cascader') {
+            $data = {{-$model-}}Repository::selectTree ();
+        } else {
+            $conditions = array_merge($request->validated(), $conditions);
+            $data = {{-$model_uc_first-}}Repository::list(
+                $request->per_page??30,
+                $conditions,
+                $request->keyword
+            );
+        }
+        if($data instanceof Collection){
+            return $this->success($data, __('base.success'));
+        }
+        return $this->success(new {{-$model_uc_first-}}Collection($data), __('base.success'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        return $this->success({{-$model_uc_first-}}Repository::find($id), __('base.success'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param {{-$model-}}Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store({{-$model_uc_first-}}Request $request)
+    {
+        try{
+            return $this->success({{-$model_uc_first-}}Repository::add(array_merge([], $request->validated())), __('base.success'));
+        } catch (QueryException $e) {
+            return $this->error(__('base.error') . (Str::contains ($e->getMessage (), 'Duplicate entry') ? '当前数据已存在' : '其它错误'));
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param {{-$model-}}Request $request
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update ({{-$model_uc_first-}}Request $request, $id)
+    {
+        $data = $request->validated();
+
+
+
+        try {
+            $res = {{-$model_uc_first-}}Repository::update ($id, array_merge(['pid' => 0], $data));
+                        return $this->success($res, __('base.success'));
+        } catch (QueryException $e) {
+            return $this->error(__('base.error') . (Str::contains ($e->getMessage (), 'Duplicate entry') ? '当前数据已存在' : '其它错误'));
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $idArray = array_filter(explode(',',$id),function($item){
+            return is_numeric($item);
+        });
+
+        try{
+            return $this->success({{-$model_uc_first-}}Repository::delete($idArray), __('base.success'));
+        } catch (QueryException $e) {
+            return $this->error(__('base.error') . $e->getMessage());
+        }
+    }
+
+    /**
+     *
+     * import data from file
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function import(Request $request){
+
+        $json_file = $request->file('file');
+        if(!is_null($json_file)){
+
+            $import_data = json_decode(file_get_contents($json_file), true);
+            if (!empty($import_data)){
+                $added = {{-$model_uc_first-}}Repository::import($import_data, $request->type);
+
+                if($added > 0){
+
+                }
+
+                return $this->success(['count' => $added], __('api.success_import', ['count' => $added]));
+            }
+
+        }
+        return $this->error(__('api.error_import'));
+    }
+}
+!endcontroller
+
+!startmodel=Models/Admin/{{-$model_uc_first-}}.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Models\Admin;
+
+use App\Models\Traits\HasOperator;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class {{-$model_uc_first-}} extends Model
+{
+    use HasFactory,SoftDeletes,HasOperator;
+
+    protected $guarded = ['id'];
+}
+!endmodel
+
+!startfeaturetest=Feature/{{-$model_uc_first-}}Test.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Tests\Feature;
+
+use Goodcatch\Modules\{{-$module_name-}}\Models\Admin\{{-$model_uc_first-}};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Feature\Traits\HasCrudApi;
+use Tests\Feature\Traits\HasOperator;
+use Tests\TestCase;
+
+class {{-$model_uc_first-}}Test extends TestCase
+{
+    use RefreshDatabase;
+    use HasCrudApi;
+    use HasOperator;
+
+    function getApi()
+    {
+        return static::BASE_PATH . '/{{-$model_snake_plural-}}';
+    }
+
+    function getModelClass()
+    {
+        return {{-$model-}}::class;
+    }
+
+    public function getSelectFields()
+    {
+        return ['name','description'];
+    }
+}
+!endfeaturetest
+
+!startunittest=Unit/{{-$model_uc_first-}}Test.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Tests\Unit;
+
+use Goodcatch\Modules\{{-$module_name-}}\Models\Admin\{{-$model_uc_first-}};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+use Tests\Unit\Traits\HasSoftDelete;
+
+class {{-$model_uc_first-}}Test extends TestCase
+{
+    use RefreshDatabase;
+    use HasSoftDelete;
+
+    public function getModelClass()
+    {
+        return {{-$model-}}::class;
+    }
+}
+!endunittest
+
+!startfactory=factories/{{-$model_uc_first-}}Factory.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class {{-$model_uc_first-}}Factory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->word(),
+        ];
+    }
+}
+!endfactory
+
+
+!startresource=Http/Resources/Admin/{{-$model_uc_first-}}Collection.php
+<?php
+
+namespace Goodcatch\Modules\{{-$module_name-}}\Http\Resources\Admin;
+
+use Illuminate\Http\Resources\Json\ResourceCollection;
+
+class {{-$model_uc_first-}}Collection extends ResourceCollection
+{
+    /**
+     * Transform the resource collection into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function toArray($request)
+    {
+        return [
+            'data'=>$this->collection->toArray(),
+            'total'=>$this->total(), // 数据总数
+            'per_page'=>$this->perPage(), // 每页数量
+            'current_page'=>$this->currentPage(), // 当前页码
+        ];
+    }
+}
+!endresource

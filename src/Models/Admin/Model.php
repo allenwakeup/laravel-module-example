@@ -3,7 +3,7 @@
  * @author  Allen <ali@goodcatch.cn>
  */
 
-namespace Goodcatch\Modules\ModuleExample\Model\Admin;
+namespace Goodcatch\Modules\ModuleExample\Models\Admin;
 
 use DateTimeInterface;
 use Goodcatch\Modules\Laravel\Model\Model as BaseModel;

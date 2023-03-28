@@ -3,7 +3,7 @@
  * @author  Allen <ali@goodcatch.cn>
  */
 
-namespace Goodcatch\Modules\ModuleExample\Model;
+namespace Goodcatch\Modules\ModuleExample\Models;
 
 use Goodcatch\Modules\Laravel\Model\Model as BaseModel;
 

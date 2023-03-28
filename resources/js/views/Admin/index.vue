@@ -460,10 +460,12 @@ export default {
                 display: inline-block;
                 .ant-menu-item {
                     padding: 0 10px;
-                    color: #777;
                     .anticon {
                         margin-right: 3px;
                     }
+                };
+                .ant-menu-item-active, .ant-menu-item:hover {
+                    color: inherit;
                 }
             }
         }
