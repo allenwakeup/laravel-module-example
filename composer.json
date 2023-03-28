@@ -23,7 +23,7 @@
         "laravel/tinker": "^2.5",
         "goodcatch/laravel-module-base": "dev-master",
         "goodcatch/laravel-module-core": "dev-master",
-        "goodcatch/admin": "^1.0",
+        "goodcatch/admin": "dev-master",
         "elendev/composer-push": "^1.0"
     },
     "autoload-dev": {
