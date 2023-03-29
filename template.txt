@@ -46,26 +46,31 @@ Route::post('/{{-$model_snake_plural-}}/import','{{-$model_uc_first-}}Controller
                         @handleExport="handleTableExport"/>
 
                     <div class="admin_table_handle_btn">
-                        <a-button @click="$router.push('/Admin/{{-$model_snake_plural-}}/form')" type="primary" :size="sysSize" icon="plus">添加</a-button>
+                        <a-button @click="$router.push($moduleUrl('{{-$model_snake_plural-}}/form'))" type="primary" :size="sysSize" icon="plus">添加</a-button>
+                        <a-button type="primary" :loading="table.loading" :disabled="!hasCheckedRows || table.loading" :size="sysSize" @click="handleBatchSave">批量保存</a-button>
                         <a-button @click="openImportDialog" icon="import" :size="sysSize" :loading="import_loading">批量导入</a-button>
                         <a-button v-if="!$isEmpty(table.actions.remove)" class="admin_delete_btn" :size="sysSize" type="danger" icon="delete" @click="handleRemoveTableRows">批量删除</a-button>
                         <a-import
-                                :open="isOpenImportDialog"
-                                @close="closeImportDialog"
-                                @ok="handleImport"
-                                :action="$api.admin{{-$model_plural-}} + '/import'"
-                                title="{{-$model_chinese_name-}}数据导入"
-                                :columns="import_columns"
-                                top="5%"
-                                width="60%"
-                                height="560px"></a-import>
+                            :open="isOpenImportDialog"
+                            @close="closeImportDialog"
+                            @ok="handleImport"
+                            :action="$api.admin{{-$model_plural_uc_first-}} + '/import'"
+                            title="{{-$model_chinese_name-}}数据导入"
+                            :columns="import_columns"
+                            top="5%"
+                            width="60%"
+                            height="560px"></a-import>
                     </div>
                 </template>
 
+                <a-table-header slot="header_name" title="name" field="name" @edit="onTableQuickEdit" />
 
-                <span slot="name" slot-scope="rows">
-                    {{ rows.name }}
-                </span>
+                <a-table-editable-cell
+                    slot="name" slot-scope="record"
+                    :default-value="record.name"
+                    @change="onCellChange(record[table.rowId], 'name', $event)" >
+                    <span slot="text">{{ record.name }}&nbsp;</span>
+                </a-table-editable-cell>
 
                 <span slot="action" slot-scope="rows">
                     <a-button icon="edit" :size="sysSize" @click="$router.push('/Admin/{{-$model_snake_plural-}}/form/'+rows.id)">编辑</a-button>
@@ -80,12 +85,13 @@ Route::post('/{{-$model_snake_plural-}}/import','{{-$model_uc_first-}}Controller
 
 <script>
 import { AImport } from '@core/components/admin/aimport'
+import { ATableHeader, ATableEditableCell } from '@/components/admin/atable'
 import Search from '@/components/admin/search'
 import { MixinList, MixinStore } from '@/plugins/mixins/admin'
 
 export default {
     mixins: [ MixinList, MixinStore ],
-    components: { AImport, Search },
+    components: { AImport, Search, ATableHeader, ATableEditableCell },
     props: {},
     data() {
         return {
@@ -139,6 +145,37 @@ export default {
     watch: {},
     computed: {},
     methods: {
+        onCellChange(key, dataIndex, value){
+            const params = {};
+            params[dataIndex] = value;
+            this.$put(this.$api.admin{{-$model_plural_uc_first-}} + '/' + key, params).then(res => {
+                if(res.code === 200 || res.code === 201){
+                    this.syncTableData(res.data);
+                    return this.$message.success(res.msg)
+                }else{
+                    return this.$message.error(res.msg)
+                }
+            });
+        },
+        handleBatchSave(){
+            if(this.hasCheckedRows){
+                this.table.loading = true;
+
+                const rows = this.table.data
+                    .filter(j => this.table.selectedRowKeys.includes(j.id));
+
+                this.$put(this.$api.admin{{-$model_plural_uc_first-}} + '/' + rows.map(j => j.id).join(','), {
+                    category_id: rows[0].category_id
+                    // TODO:: 默认提交方式是取第一条数据作为批量保存的数据依据，这里只提供一个方式
+                }).then(res => {
+                    this.table.loading = false;
+                    if(res.code === 200){
+                        this.loadTableData();
+                    }
+                    this.$message.success(res.msg);
+                }, e => this.table.loading = false);
+            }
+        },
         openImportDialog(){
             this.isOpenImportDialog = true;
         },
@@ -193,7 +230,9 @@ export default {
 </template>
 
 <script>
+import { MixinForm } from '@/plugins/mixins/admin'
 export default {
+    mixins: [ MixinForm ],
     components: {},
     props: {},
     data() {
@@ -253,7 +292,7 @@ export default {
 
         },
         getForm(){
-            this.$get(this.$api.admin{{-$model_plural_uc_first-}}+'/'+this.id + '?type' + this.form.type).then(res=>{
+            this.$get(this.$api.admin{{-$model_plural_uc_first-}}+'/'+this.id).then(res=>{
                 if(res.code === 200 && !!res.data) {
                     this.form = res.data;
                 }
@@ -303,10 +342,11 @@ class {{-$model_uc_first-}}Repository extends BaseRepository
     public static function list($perPage, $condition = [], $keyword = null)
     {
         return {{-$model_uc_first-}}::query()
-            ->where(function ($query) use ($condition) {
+            ->where(function ($query) use ($condition, $keyword) {
                 self::buildQuery($query, $condition);
-                if (!empty ($keyword)) {
-                    self::buildSelect($query, $condition, $keyword);
+                if (! empty ($keyword))
+                {
+                    self::buildQuery($query, ['name' => $keyword]);
                 }
             })
             ->orderBy('id', 'desc')
@@ -425,7 +465,6 @@ namespace Goodcatch\Modules\{{-$module_name-}}\Http\Requests\Admin;
 
 
 use Goodcatch\Modules\Core\Http\Requests\BaseRequest as FormRequest;
-use Goodcatch\Modules\Core\Models\Admin\Department;
 use Illuminate\Validation\Rule;
 
 class {{-$model_uc_first-}}Request extends FormRequest
@@ -440,9 +479,9 @@ class {{-$model_uc_first-}}Request extends FormRequest
     {
         $rules = [
             'description' => 'max:190',
-            'name' => ['required', 'max:50', Rule::unique('{{-$model_snake_plural-}}','name')->ignore($this->route()->id)],
+            'name' => ['required', 'max:50', Rule::unique('{{-$model_snake_plural-}}','name')->ignore($this->route()->{{-$model-}})],
             'order' => 'integer',
-            'code' => ['max:50',  Rule::unique('{{-$model_snake_plural-}}','code')->ignore($this->route()->id)],
+            'code' => ['max:50',  Rule::unique('{{-$model_snake_plural-}}','code')->ignore($this->route()->{{-$model-}})],
             'status' => [
                 'required',
                 Rule::in ([0,1])
@@ -514,14 +553,14 @@ class {{-$model_uc_first-}}Controller extends Controller
         {
             if (!empty ($request->keyword) && is_numeric ($request->keyword))
             {
-                $data = {{-$model-}}Repository::tree2 (intval ($request->keyword));
+                $data = {{-$model_uc_first-}}Repository::tree2 (intval ($request->keyword));
             } else {
-                $data = {{-$model-}}Repository::tree2 (0);
+                $data = {{-$model_uc_first-}}Repository::tree2 (0);
             }
         } else if ($data_type === 'select') {
-            $data = {{-$model-}}Repository::select ($request->keyword);
+            $data = {{-$model_uc_first-}}Repository::select ($request->keyword);
         } else if ($data_type === 'cascader') {
-            $data = {{-$model-}}Repository::selectTree ();
+            $data = {{-$model_uc_first-}}Repository::selectTree ();
         } else {
             $conditions = array_merge($request->validated(), $conditions);
             $data = {{-$model_uc_first-}}Repository::list(
@@ -569,14 +608,12 @@ class {{-$model_uc_first-}}Controller extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update ({{-$model_uc_first-}}Request $request, $id)
+    public function update ({{-$model_uc_first-}}Request $request, ${{-$model-}})
     {
         $data = $request->validated();
 
-
-
         try {
-            $res = {{-$model_uc_first-}}Repository::update ($id, array_merge(['pid' => 0], $data));
+            $res = {{-$model_uc_first-}}Repository::update (${{-$model-}}, $data);
                         return $this->success($res, __('base.success'));
         } catch (QueryException $e) {
             return $this->error(__('base.error') . (Str::contains ($e->getMessage (), 'Duplicate entry') ? '当前数据已存在' : '其它错误'));
@@ -636,15 +673,24 @@ class {{-$model_uc_first-}}Controller extends Controller
 
 namespace Goodcatch\Modules\{{-$module_name-}}\Models\Admin;
 
-use App\Models\Traits\HasOperator;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class {{-$model_uc_first-}} extends Model
 {
-    use HasFactory,SoftDeletes,HasOperator;
+    use SoftDeletes;
 
     protected $guarded = ['id'];
+
+    /**
+     * 搜索字段
+     *
+     * @var array
+     */
+    public static $searchField = [
+        'name' => [
+            'searchType'    => 'like'
+        ],
+    ];
 }
 !endmodel
 
