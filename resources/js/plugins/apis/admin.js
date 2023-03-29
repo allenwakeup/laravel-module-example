@@ -13,6 +13,6 @@ export default {
      * 模块化接口
      */
 
-    "adminExamples": baseUrl + moduleUrl('examples'), // 示例
+    "adminExamples": baseUrl + moduleUrl('examples'), // 模块示例
 
 };

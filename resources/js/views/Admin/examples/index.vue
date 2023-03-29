@@ -1,6 +1,6 @@
 <template>
     <div class="b2b2c">
-        <div class="admin_table_page_title">示例列表</div>
+        <div class="admin_table_page_title">模块示例列表</div>
         <div class="unline underm"></div>
 
         <div class="admin_table_list">
