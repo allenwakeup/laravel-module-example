@@ -73,7 +73,7 @@ Route::post('/{{-$model_snake_plural-}}/import','{{-$model_uc_first-}}Controller
                 </a-table-editable-cell>
 
                 <span slot="action" slot-scope="rows">
-                    <a-button icon="edit" :size="sysSize" @click="$router.push('/Admin/{{-$model_snake_plural-}}/form/'+rows.id)">编辑</a-button>
+                    <a-button icon="edit" :size="sysSize" @click="$router.push($moduleUrl('{{-$model_snake_plural-}}/form/'+rows.id))">编辑</a-button>
                 </span>
             </a-table>
             <div class="admin_pagination" v-if="table.total > 0">
@@ -339,7 +339,7 @@ use Illuminate\Support\Facades\DB;
 class {{-$model_uc_first-}}Repository extends BaseRepository
 {
 
-    public static function list($perPage, $condition = [], $keyword = null)
+    public static function getList($perPage, $condition = [], $keyword = null)
     {
         return {{-$model_uc_first-}}::query()
             ->where(function ($query) use ($condition, $keyword) {
@@ -378,14 +378,14 @@ class {{-$model_uc_first-}}Repository extends BaseRepository
     public static function select ($keyword = null)
     {
         return {{-$model_uc_first-}}::query()
-            ->select(['id', 'path_text as name'])
+            ->select(['id', 'name'])
             ->where(function ($query) use ($keyword) {
                if (! empty ($keyword))
                 {
-                    $query->where('path_text', 'like', '%' . $keyword . '%');
+                    $query->where('name', 'like', '%' . $keyword . '%');
                 }
             })
-            ->orderBy('level', 'desc')
+            ->orderBy('id', 'desc')
             ->get()
             ->map(function ({{-$model_uc_first-}} $item) {
                 $map = $item->toArray();
@@ -490,9 +490,9 @@ class {{-$model_uc_first-}}Request extends FormRequest
         switch ($this->method()) {
             case 'GET':
                 $rules = [
-                    'name' => '',
-                    'code' => '',
-                    'description' => '',
+                    'name' => 'max:50',
+                    'code' => 'max:50',
+                    'description' => 'max:190',
                 ];
                 break;
         }
@@ -549,22 +549,14 @@ class {{-$model_uc_first-}}Controller extends Controller
     {
         $data_type = $request->get ('data_type');
 
-        if ($data_type === 'tree')
-        {
-            if (!empty ($request->keyword) && is_numeric ($request->keyword))
-            {
-                $data = {{-$model_uc_first-}}Repository::tree2 (intval ($request->keyword));
-            } else {
-                $data = {{-$model_uc_first-}}Repository::tree2 (0);
-            }
-        } else if ($data_type === 'select') {
+        if ($data_type === 'select') {
             $data = {{-$model_uc_first-}}Repository::select ($request->keyword);
         } else if ($data_type === 'cascader') {
             $data = {{-$model_uc_first-}}Repository::selectTree ();
         } else {
             $conditions = array_merge($request->validated(), $conditions);
-            $data = {{-$model_uc_first-}}Repository::list(
-                $request->per_page??30,
+            $data = {{-$model_uc_first-}}Repository::getList(
+                $request->has('per_page') ? $request->per_page : 30,
                 $conditions,
                 $request->keyword
             );
@@ -595,7 +587,7 @@ class {{-$model_uc_first-}}Controller extends Controller
     public function store({{-$model_uc_first-}}Request $request)
     {
         try{
-            return $this->success({{-$model_uc_first-}}Repository::add(array_merge([], $request->validated())), __('base.success'));
+            return $this->success({{-$model_uc_first-}}Repository::add($request->validated()), __('base.success'));
         } catch (QueryException $e) {
             return $this->error(__('base.error') . (Str::contains ($e->getMessage (), 'Duplicate entry') ? '当前数据已存在' : '其它错误'));
         }
@@ -653,7 +645,7 @@ class {{-$model_uc_first-}}Controller extends Controller
 
             $import_data = json_decode(file_get_contents($json_file), true);
             if (!empty($import_data)){
-                $added = {{-$model_uc_first-}}Repository::import($import_data, $request->type);
+                $added = {{-$model_uc_first-}}Repository::import($import_data);
 
                 if($added > 0){
 
