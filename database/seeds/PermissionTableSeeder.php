@@ -65,7 +65,7 @@ class PermissionTableSeeder extends Seeder
                 self::MODULE_API_PREFIX . '::admin.examples'
             ],
 
-            // 代码自动生成菜单标记，请勿删除该行
+            // 代码自动生成权限标记，请勿删除该行
         ];
     }
 }
