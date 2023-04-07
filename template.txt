@@ -63,7 +63,7 @@ Route::post('/{{-$model_snake_plural-}}/import','{{-$model_uc_first-}}Controller
                     </div>
                 </template>
 
-                <a-table-header slot="header_name" title="name" field="name" @edit="onTableQuickEdit" />
+                <a-table-header slot="header_name" title="名称" field="name" @edit="onTableQuickEdit" />
 
                 <a-table-editable-cell
                     slot="name" slot-scope="record"
@@ -101,7 +101,7 @@ export default {
                     remove: this.$api.admin{{-$model_plural_uc_first-}}
                 },
                 columns: [
-                    {title: '名称', scopedSlots: { customRender: 'name' }, width: 90, key: 'name', ellipsis: true},
+                    {scopedSlots: { customRender: 'name' }, slots: { title: 'header_name' }, width: 90, key: 'name', ellipsis: true},
                     {title: '操作', scopedSlots: {customRender: 'action'}, width: 100, key: 'action'},
                 ],
             },
@@ -606,7 +606,7 @@ class {{-$model_uc_first-}}Controller extends Controller
 
         try {
             $res = {{-$model_uc_first-}}Repository::update (${{-$model-}}, $data);
-                        return $this->success($res, __('base.success'));
+            return $this->success($res, __('base.success'));
         } catch (QueryException $e) {
             return $this->error(__('base.error') . (Str::contains ($e->getMessage (), 'Duplicate entry') ? '当前数据已存在' : '其它错误'));
         }

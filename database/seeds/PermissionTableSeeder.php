@@ -46,10 +46,9 @@ class PermissionTableSeeder extends Seeder
                                 'icon' => 'icon-gc-examples',
                                 'is_type' => $menu_type,
                                 'link' => $this->getSeedsModuleApiUri(self::MODULE_ALIAS,'examples'),
-                            ],
-
+                            ]
                         ]
-                    ]
+                    ],
 
                     // 代码自动生成菜单标记，请勿删除该行
                 ]

@@ -4,7 +4,7 @@
 
             <!-- 菜单 start -->
             <a-layout-sider v-if="!subMenu" class="admin_menu" width="180" v-model="collapsed" :trigger="null" collapsible>
-                    <div class="base_shadow admin_menu_title"><img class="logo" :src="require(collapsed ? '@/asset/system_logo_mini.png' : '@/asset/system_logo.png')" alt="logo"><div :class="collapsed?'hiddens':'shows'"><a-badge :offset="[18,0]"><span class="version" slot="count">{{version}}</span><span class="name">{{ appName }}</span></a-badge></div></div>
+                    <div class="base_shadow admin_menu_title"><img class="logo" :src="collapsed ? '/dist/images/system_logo_mini.png' : '/dist/images/system_logo.png'" alt="logo"><div :class="collapsed?'hiddens':'shows'"><a-badge :offset="[18,0]"><span class="version" slot="count">{{version}}</span><span class="name">{{ appName }}</span></a-badge></div></div>
                     <a-menu mode="inline" :inline-indent="15" theme="dark" :default-selected-keys="defaultSelectedKeys" :open-keys.sync="defaultOpenKeys">
                         <a-menu-item @click="to_nav('/Admin/index', 0)"><a-font class="afont menu_icon" type="icon-gc-home" /><span>首页</span></a-menu-item>
                         <a-sub-menu v-if="v.is_type >= 100" v-for="v in menus" :key="v.id + ''">
@@ -24,7 +24,7 @@
             <!-- 右侧内容 start -->
             <a-layout class="admin_right_content" ref="content_view">
                 <a-layout-header :class="subMenu?'admin_right_top mobile':(collapsed?'admin_right_top small':'admin_right_top')">
-                    <div v-if="subMenu" class="admin_menu_title item_left float_left"><img style="margin-top:-6px;margin-right:10px" width="30px" height="30px" :src="require('@/asset/system_logo.png')" alt="logo"></div>
+                    <div v-if="subMenu" class="admin_menu_title item_left float_left"><img style="margin-top:-6px;margin-right:10px" width="30px" height="30px" src="/dist/images/system_logo.png" alt="logo"></div>
                     <a-icon class="base_font_size item_left primary-color-reverse" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="toggleCollapsed"/>
                     <div class="top-menu">
 
@@ -90,7 +90,7 @@
             <!-- 手机菜单 start -->
             <a-drawer :body-style="{ padding: 0, height: '100%' }" placement="left" :closable="false" :visible="drawerShow" @close="onClose">
                 <div class="admin_menu mobile">
-                    <div class="admin_menu_title"><img :src="require('@/asset/system_logo.png')" alt="logo"><div :class="'shows'">{{ appName }}</div></div>
+                    <div class="admin_menu_title"><img src="/dist/images/system_logo.png" alt="logo"><div :class="'shows'">{{ appName }}</div></div>
                         <a-menu mode="inline">
                             <a-menu-item @click="to_nav('/Admin/index')"><a-font class="afont menu_icon" type="icon-gc-home" /><span>首页</span></a-menu-item>
                             <a-sub-menu v-for="v in menus" :key="v.id">
