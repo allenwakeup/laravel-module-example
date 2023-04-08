@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,16 +38,17 @@ Route::group(
                                 ]
                             ]);
                             // 自动加载生成的其它路由
-                            foreach (new DirectoryIterator(dirname(__DIR__) . '/routes/auto') as $f) {
-                                if ($f->isDot()) {
-                                    continue;
-                                }
-                                $name = $f->getPathname();
-                                if ($f->isFile() && Str::endsWith($name, '.php')) {
-                                    require $name;
+                            if(is_dir(dirname(__DIR__) . '/routes/auto')){
+                                foreach (new DirectoryIterator(dirname(__DIR__) . '/routes/auto') as $f) {
+                                    if ($f->isDot()) {
+                                        continue;
+                                    }
+                                    $name = $f->getPathname();
+                                    if ($f->isFile() && Str::endsWith($name, '.php')) {
+                                        require $name;
+                                    }
                                 }
                             }
-
                         });
                     });
                 });
