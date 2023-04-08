@@ -665,11 +665,11 @@ class {{-$model_uc_first-}}Controller extends Controller
 
 namespace Goodcatch\Modules\{{-$module_name-}}\Models\Admin;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
+// use Illuminate\Database\Eloquent\SoftDeletes;
 
 class {{-$model_uc_first-}} extends Model
 {
-    use SoftDeletes;
+    // use SoftDeletes;
 
     protected $guarded = ['id'];
 
