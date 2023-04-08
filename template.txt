@@ -479,13 +479,13 @@ class {{-$model_uc_first-}}Request extends FormRequest
     {
         $rules = [
             'description' => 'max:190',
-            'name' => ['required', 'max:50', Rule::unique('{{-$model_snake_plural-}}','name')->ignore($this->route()->{{-$model-}})],
+            'name' => ['required', 'max:50', Rule::unique('{{-$model_snake_plural-}}','name')->ignore($this->route()->{{-$model_snake-}})],
             'order' => 'integer',
-            'code' => ['max:50',  Rule::unique('{{-$model_snake_plural-}}','code')->ignore($this->route()->{{-$model-}})],
-            'status' => [
-                'required',
-                Rule::in ([0,1])
-            ]
+            'code' => ['max:50',  Rule::unique('{{-$model_snake_plural-}}','code')->ignore($this->route()->{{-$model_snake-}})],
+//            'status' => [
+//                'required',
+//                Rule::in ([0,1])
+//            ]
         ];
         switch ($this->method()) {
             case 'GET':
@@ -665,11 +665,11 @@ class {{-$model_uc_first-}}Controller extends Controller
 
 namespace Goodcatch\Modules\{{-$module_name-}}\Models\Admin;
 
-// use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class {{-$model_uc_first-}} extends Model
 {
-    // use SoftDeletes;
+    //use SoftDeletes;
 
     protected $guarded = ['id'];
 

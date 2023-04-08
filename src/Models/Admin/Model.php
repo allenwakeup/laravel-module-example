@@ -16,7 +16,7 @@ abstract class Model extends BaseModel
      *
      */
     protected function getModuleTablePrefix () {
-        return 'moduleexample_';
+        return '';
     }
 
     /**
