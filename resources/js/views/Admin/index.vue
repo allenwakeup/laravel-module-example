@@ -200,6 +200,7 @@ export default {
         ...adminCommonStore.mapActions({
             selectMenu: 'selectMenu',
             setTopBusy: 'gettingBusy',
+            setWidth: 'setWidth',
             setHeight: 'setHeight',
             setNotificationCount: 'setNotification',
         }),
@@ -343,9 +344,11 @@ export default {
                 window.screenWidth = document.body.clientWidth;
                 _this.screenWidth = window.screenWidth
                 _this.onScreenWidth();
+                this.setWidth(document.body.clientWidth);
                 this.setHeight(document.body.clientHeight);
             })()
         }
+        this.setWidth(document.body.clientWidth);
         this.setHeight(document.body.clientHeight);
     },
     beforeRouteUpdate (to, from, next) {
